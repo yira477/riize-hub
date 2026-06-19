@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RIIZE 物料站</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500&display=swap');
+
+  :root {
+    --bg: #F7F5F2;
+    --surface: #FFFFFF;
+    --text: #1A1A1A;
+    --text-muted: #888;
+    --text-faint: #BBB;
+    --border: rgba(0,0,0,0.08);
+    --border-hover: rgba(0,0,0,0.18);
+    --accent: #C9563A;
+    --accent-soft: #FAF0ED;
+    --mono: 'DM Mono', monospace;
+    --sans: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── header ── */
+  header {
+    padding: 3rem 2rem 1.5rem;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .site-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1.15;
+  }
+  .site-desc {
+    margin-top: 0.5rem;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  /* ── date nav ── */
+  .date-nav-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 2rem 1.5rem;
+  }
+  .date-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .date-nav::-webkit-scrollbar { display: none; }
+
+  .nav-arrow {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 0.5px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: border-color 0.15s, color 0.15s;
+    user-select: none;
+  }
+  .nav-arrow:hover { border-color: var(--border-hover); color: var(--text); }
+
+  .date-chips {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .date-chips::-webkit-scrollbar { display: none; }
+
+  .date-chip {
+    flex-shrink: 0;
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 0.5px solid var(--border);
+    background: var(--surface);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .date-chip:hover { border-color: var(--border-hover); color: var(--text); }
+  .date-chip.active {
+    background: var(--text);
+    color: var(--surface);
+    border-color: var(--text);
+  }
+
+  /* ── main layout ── */
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 2rem 4rem;
+  }
+
+  /* ── day block ── */
+  .day-block { margin-bottom: 2.5rem; }
+
+  .day-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.75rem;
+  }
+  .day-date {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  .day-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+
+  /* ── link list ── */
+  .link-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* ── link card with dual links ── */
+  .link-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .link-card:hover { border-color: var(--border-hover); }
+
+  .link-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px 8px;
+  }
+  .platform-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-youtube   { background: #FAF0ED; color: #993C1D; }
+  .badge-weibo     { background: #E6F1FB; color: #185FA5; }
+  .badge-bubble    { background: #FBEAF0; color: #993556; }
+  .badge-vlive     { background: #EEEDFE; color: #3C3489; }
+  .badge-tiktok    { background: #F1EFE8; color: #5F5E5A; }
+  .badge-instagram { background: #FBEAF0; color: #72243E; }
+  .badge-weverse   { background: #EAF3DE; color: #3B6D11; }
+  .badge-other     { background: #F1EFE8; color: #5F5E5A; }
+
+  .link-title {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  /* dual link buttons */
+  .link-buttons {
+    display: flex;
+    gap: 0;
+    border-top: 0.5px solid var(--border);
+  }
+  .link-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 10px;
+    text-decoration: none;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--text-muted);
+    background: transparent;
+    transition: background 0.12s, color 0.12s;
+  }
+  .link-btn:hover { background: var(--bg); color: var(--text); }
+  .link-btn + .link-btn { border-left: 0.5px solid var(--border); }
+
+  .link-btn-yt:hover  { color: #993C1D; }
+  .link-btn-bili:hover { color: #185FA5; }
+
+  .link-btn svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+  }
+
+  /* single link (no bilibili) */
+  .link-btn-single {
+    width: 100%;
+    justify-content: flex-start;
+    padding-left: 14px;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+
+  /* ── footer ── */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--text-faint);
+    border-top: 0.5px solid var(--border);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 480px) {
+    header, .date-nav-wrap { padding-left: 1.25rem; padding-right: 1.25rem; }
+    main { padding: 0 1.25rem 3rem; }
+    h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="site-eyebrow">RIIZE FAN HUB</div>
+  <h1>RIIZE 每日物料</h1>
+  <p class="site-desc">点击链接直接跳转至原平台收看 · 每日更新</p>
+</header>
+
+<div class="date-nav-wrap">
+  <div class="date-nav">
+    <div class="nav-arrow" id="nav-prev" title="往前">‹</div>
+    <div class="date-chips" id="date-chips"></div>
+    <div class="nav-arrow" id="nav-next" title="往后">›</div>
+  </div>
+</div>
+
+<main id="main"></main>
+
+<footer>made with ♡ by fans, for fans</footer>
+
+<script>
+/*
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✏️  如何添加新物料：
+
+  在 DATA 数组里追加一个对象：
+  {
+    date: "2025-06-20",       ← 日期 YYYY-MM-DD
+    title: "视频标题",
+    platform: "YouTube",      ← 徽章标签（见下方列表）
+    yt:   "https://...",      ← YouTube 链接（没有就删掉这行）
+    bili: "https://..."       ← B站链接（没有就删掉这行）
+  }
+
+  platform 值：YouTube / Weibo / Bubble / Vlive / TikTok / Instagram / Weverse / 其他
+
+  yt 和 bili 都可选：
+  - 两个都填 → 显示两个按钮
+  - 只填一个 → 只显示一个按钮
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+const DATA = [
+  {
+    date: "2025-06-19",
+    title: "RIIZE 'JUST RIDE' MV",
+    platform: "YouTube",
+    yt:   "https://www.youtube.com/watch?v=example1",
+    bili: "https://www.bilibili.com/video/example1"
+  },
+  {
+    date: "2025-06-19",
+    title: "소희 직캠 — JUST RIDE 쇼챔피언",
+    platform: "YouTube",
+    yt:   "https://www.youtube.com/watch?v=example2",
+    bili: "https://www.bilibili.com/video/example2"
+  },
+  {
+    date: "2025-06-19",
+    title: "RIIZE Weverse 컴백 라이브",
+    platform: "Weverse",
+    yt:   "https://weverse.io/riize/example"
+  },
+  {
+    date: "2025-06-18",
+    title: "런닝맨 RIIZE 특집 EP.700 예고편",
+    platform: "YouTube",
+    yt:   "https://www.youtube.com/watch?v=example3",
+    bili: "https://www.bilibili.com/video/example3"
+  },
+  {
+    date: "2025-06-18",
+    title: "Wonbin Bubble 영상편지",
+    platform: "Bubble",
+    yt:   "https://bubble.io/example"
+  },
+  {
+    date: "2025-06-17",
+    title: "Anton × Weverse Magazine 인터뷰",
+    platform: "Weverse",
+    yt:   "https://weverse.io/riize/example2",
+    bili: "https://www.bilibili.com/video/example4"
+  },
+  {
+    date: "2025-06-17",
+    title: "RIIZE TikTok 컴백 비하인드",
+    platform: "TikTok",
+    yt: "https://www.tiktok.com/@riize/example"
+  }
+];
+
+/* ── icons ── */
+const ICON_YT = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg>`;
+const ICON_BILI = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.81 4.47c-.08 0-.16-.02-.23-.06L15.25 2.9a.39.39 0 0 1-.15-.54.39.39 0 0 1 .54-.15l2.33 1.51c.19.12.25.37.13.56a.4.4 0 0 1-.29.19zM6.18 4.47a.4.4 0 0 1-.29-.19.4.4 0 0 1 .13-.56L8.35 2.21a.39.39 0 0 1 .54.15.39.39 0 0 1-.15.54L6.41 4.41c-.07.04-.15.06-.23.06zm13.33 5.27H4.5a.5.5 0 0 0-.5.5v8.25c0 .28.22.5.5.5h15c.28 0 .5-.22.5-.5V10.24a.5.5 0 0 0-.5-.5zm-1 8.25H5.5v-7.25h13v7.25zm-9.75-5.5v3.5l3-1.75-3-1.75zm1-4.25H4.24a2.24 2.24 0 0 0-2.24 2.24v8.02a2.24 2.24 0 0 0 2.24 2.24H19.76A2.24 2.24 0 0 0 22 18.5v-8.02a2.24 2.24 0 0 0-2.24-2.24H9.76z"/></svg>`;
+const ICON_EXT = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+
+/* ── helpers ── */
+function platformClass(p) {
+  const map = { YouTube:'youtube', Weibo:'weibo', Bubble:'bubble', Vlive:'vlive', TikTok:'tiktok', Instagram:'instagram', Weverse:'weverse' };
+  return 'badge-' + (map[p] || 'other');
+}
+
+function formatDate(str) {
+  const d = new Date(str + 'T00:00:00');
+  return d.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' });
+}
+
+function formatChip(str) {
+  const d = new Date(str + 'T00:00:00');
+  return d.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
+}
+
+/* ── group & sort ── */
+const groups = {};
+DATA.forEach(item => {
+  if (!groups[item.date]) groups[item.date] = [];
+  groups[item.date].push(item);
+});
+const dates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+/* ── render date chips ── */
+const chipsEl = document.getElementById('date-chips');
+dates.forEach((date, i) => {
+  const chip = document.createElement('button');
+  chip.className = 'date-chip' + (i === 0 ? ' active' : '');
+  chip.textContent = formatChip(date);
+  chip.dataset.date = date;
+  chip.addEventListener('click', () => scrollToDate(date));
+  chipsEl.appendChild(chip);
+});
+
+/* ── scroll nav arrows ── */
+document.getElementById('nav-prev').addEventListener('click', () => {
+  chipsEl.scrollBy({ left: -120, behavior: 'smooth' });
+});
+document.getElementById('nav-next').addEventListener('click', () => {
+  chipsEl.scrollBy({ left: 120, behavior: 'smooth' });
+});
+
+/* ── render main content ── */
+const main = document.getElementById('main');
+main.innerHTML = dates.map(date => {
+  const items = groups[date];
+  const cards = items.map(item => {
+    const hasBili = !!item.bili;
+    const hasYt   = !!item.yt;
+    const bothLinks = hasBili && hasYt;
+
+    let buttonsHtml = '';
+    if (bothLinks) {
+      buttonsHtml = `
+        <div class="link-buttons">
+          <a class="link-btn link-btn-yt" href="${item.yt}" target="_blank" rel="noopener">
+            ${ICON_YT} YouTube
+          </a>
+          <a class="link-btn link-btn-bili" href="${item.bili}" target="_blank" rel="noopener">
+            ${ICON_BILI} B站
+          </a>
+        </div>`;
+    } else if (hasYt) {
+      buttonsHtml = `
+        <div class="link-buttons">
+          <a class="link-btn link-btn-yt link-btn-single" href="${item.yt}" target="_blank" rel="noopener">
+            ${ICON_YT} YouTube ${ICON_EXT}
+          </a>
+        </div>`;
+    } else if (hasBili) {
+      buttonsHtml = `
+        <div class="link-buttons">
+          <a class="link-btn link-btn-bili link-btn-single" href="${item.bili}" target="_blank" rel="noopener">
+            ${ICON_BILI} B站 ${ICON_EXT}
+          </a>
+        </div>`;
+    }
+
+    return `
+      <div class="link-card">
+        <div class="link-card-top">
+          <span class="platform-badge ${platformClass(item.platform)}">${item.platform}</span>
+          <span class="link-title">${item.title}</span>
+        </div>
+        ${buttonsHtml}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="day-block" id="day-${date}">
+      <div class="day-header">
+        <span class="day-date">${formatDate(date)}</span>
+        <span class="day-count">${items.length} 条</span>
+      </div>
+      <div class="link-list">${cards}</div>
+    </div>`;
+}).join('');
+
+/* ── scroll to date + update active chip ── */
+function scrollToDate(date) {
+  const el = document.getElementById('day-' + date);
+  if (!el) return;
+  const navH = document.querySelector('.date-nav-wrap').offsetHeight + 16;
+  const top = el.getBoundingClientRect().top + window.scrollY - navH;
+  window.scrollTo({ top, behavior: 'smooth' });
+  document.querySelectorAll('.date-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.date === date);
+  });
+  const chip = chipsEl.querySelector(`[data-date="${date}"]`);
+  if (chip) chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+/* ── update active chip on scroll ── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const date = entry.target.id.replace('day-', '');
+      document.querySelectorAll('.date-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.date === date);
+      });
+    }
+  });
+}, { threshold: 0.3, rootMargin: '-80px 0px -60% 0px' });
+
+dates.forEach(date => {
+  const el = document.getElementById('day-' + date);
+  if (el) observer.observe(el);
+});
+</script>
+</body>
+</html>
