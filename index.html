@@ -8,7 +8,7 @@
   @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=ZCOOL+XiaoWei&family=DM+Mono:wght@400;500&display=swap');
 
   :root {
-    --bg: #F7F5F2;
+    --bg: transparent;
     --surface: #FFFFFF;
     --text: #1A1A1A;
     --text-muted: #888;
@@ -24,7 +24,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: var(--bg);
+    background: linear-gradient(135deg, #49586B 0%, #5082C9 35%, #8BA6BF 65%, #93A3C5 100%);
+    background-attachment: fixed;
     color: var(--text);
     font-family: var(--sans);
     font-size: 15px;
@@ -284,6 +285,16 @@
 <main id="main"></main>
 
 <footer>made with ♡ by rainy.xh, for briize</footer>
+
+<script>
+document.addEventListener('mousemove', function(e) {
+  const x = e.clientX / window.innerWidth;
+  const y = e.clientY / window.innerHeight;
+  const angle = Math.round(x * 360);
+  const mid = Math.round(20 + y * 40);
+  document.body.style.background = `linear-gradient(${angle}deg, #49586B 0%, #5082C9 ${mid}%, #8BA6BF ${mid+25}%, #93A3C5 100%)`;
+});
+</script>
 
 <script>
 /*
